@@ -2,7 +2,6 @@ import socket
 import threading
 
 clients = []
-text_content = ""
 
 def broadcast(message, client_socket):
     for client in clients:
@@ -16,9 +15,6 @@ def broadcast(message, client_socket):
 def handle_client(client_socket, addr):
     clients.append(client_socket)
 
-    global text_content
-    client_socket.send(text_content.encode('utf-8'))  # Send the current text content to the new client
-
     while True:
         try:
             data = client_socket.recv(1024).decode('utf-8')
@@ -26,12 +22,8 @@ def handle_client(client_socket, addr):
                 break
             if data.lower() == 'exit':
                 break
-            elif data.lower() == 'get_text':
-                client_socket.send(text_content.encode('utf-8'))  # Send the current text content to the client
             else:
-                text_content = data
-                # Broadcast the updated text content to all connected clients
-                broadcast(text_content.encode('utf-8'), client_socket)
+                broadcast(data.encode('utf-8'), client_socket)
         except:
             # Remove the broken connection
             clients.remove(client_socket)
