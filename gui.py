@@ -2,8 +2,9 @@ import socket
 import tkinter as tk
 import threading
 from tkinter import filedialog
-from tkinter import messagebox  # Import messagebox for showing alerts
+import tkinter.font as tkFont
 from networking import receive_messages, send_text
+from utils import save_file, FindDialog , zoom_in , zoom_out
 
 class CollaborativeTextEditor(tk.Tk):
     def __init__(self):
@@ -13,6 +14,9 @@ class CollaborativeTextEditor(tk.Tk):
 
         self.text_widget = tk.Text(self, wrap="word")
         self.text_widget.pack(expand=True, fill="both")
+        
+        # Set the default font size here
+        self.text_widget.configure(font=("TkFixedFont", 12))
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(('localhost', 12345))
@@ -36,6 +40,12 @@ class CollaborativeTextEditor(tk.Tk):
         self.edit_menu.add_separator()
         self.edit_menu.add_command(label="Find", command=self.find_text)
         self.menu_bar.add_cascade(label="Edit", menu=self.edit_menu)
+        
+        # Add View menu
+        self.view_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.view_menu.add_command(label="Zoom In", command=self.zoom_in)
+        self.view_menu.add_command(label="Zoom Out", command=self.zoom_out)
+        self.menu_bar.add_cascade(label="View", menu=self.view_menu)
 
         self.config(menu=self.menu_bar)
 
@@ -43,12 +53,7 @@ class CollaborativeTextEditor(tk.Tk):
         send_text(self.text_widget, self.client)
 
     def save_file(self):
-        file_path = filedialog.asksaveasfilename(defaultextension=".txt")
-        if file_path:
-            text_content = self.text_widget.get("1.0", "end-1c")
-            with open(file_path, "w") as file:
-                file.write(text_content)
-            messagebox.showinfo("Info", "File saved successfully.")  # Show a success message
+        save_file(self.text_widget)
 
     def cut_text(self):
         self.clipboard_clear()
@@ -68,37 +73,13 @@ class CollaborativeTextEditor(tk.Tk):
     def find_text(self):
         find_dialog = FindDialog(self)
         self.wait_window(find_dialog)
+        
+    def zoom_in(self):
+        zoom_in(self.text_widget)
+
+    def zoom_out(self):
+        zoom_out(self.text_widget)
 
     def destroy(self):
         self.client.send('exit'.encode('utf-8'))
         super().destroy()
-
-class FindDialog(tk.Toplevel):
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self.parent = parent
-        self.title("Find")
-        self.geometry("300x100")
-
-        self.find_label = tk.Label(self, text="Find:")
-        self.find_label.pack()
-
-        self.find_entry = tk.Entry(self)
-        self.find_entry.pack()
-
-        self.find_button = tk.Button(self, text="Find", command=self.find)
-        self.find_button.pack()
-
-    def find(self):
-        search_str = self.find_entry.get()
-        text_widget = self.parent.text_widget
-        start_index = text_widget.search(search_str, "1.0", stopindex=tk.END)
-        if start_index:
-            end_index = f"{start_index}+{len(search_str)}c"
-            text_widget.tag_remove("found", "1.0", tk.END)
-            text_widget.tag_add("found", start_index, end_index)
-            text_widget.see(start_index)
-            text_widget.focus_set()
-        else:
-            messagebox.showinfo("Info", "Text not found.")
