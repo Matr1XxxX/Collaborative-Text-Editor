@@ -2,6 +2,7 @@ import socket
 import tkinter as tk
 import threading
 from tkinter import filedialog
+import tkinter.font as tkFont
 from networking import receive_messages, send_text
 from utils import save_file, FindDialog
 
@@ -13,6 +14,9 @@ class CollaborativeTextEditor(tk.Tk):
 
         self.text_widget = tk.Text(self, wrap="word")
         self.text_widget.pack(expand=True, fill="both")
+        
+        # Set the default font size here
+        self.text_widget.configure(font=("TkFixedFont", 12))
 
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client.connect(('localhost', 12345))
@@ -36,6 +40,12 @@ class CollaborativeTextEditor(tk.Tk):
         self.edit_menu.add_separator()
         self.edit_menu.add_command(label="Find", command=self.find_text)
         self.menu_bar.add_cascade(label="Edit", menu=self.edit_menu)
+        
+        # Add View menu
+        self.view_menu = tk.Menu(self.menu_bar, tearoff=0)
+        self.view_menu.add_command(label="Zoom In", command=self.zoom_in)
+        self.view_menu.add_command(label="Zoom Out", command=self.zoom_out)
+        self.menu_bar.add_cascade(label="View", menu=self.view_menu)
 
         self.config(menu=self.menu_bar)
 
@@ -63,6 +73,19 @@ class CollaborativeTextEditor(tk.Tk):
     def find_text(self):
         find_dialog = FindDialog(self)
         self.wait_window(find_dialog)
+        
+    def zoom_in(self):
+        font = tkFont.Font(font=self.text_widget.cget("font"))
+        current_size = font.actual()["size"]
+        new_size = current_size + 2
+        self.text_widget.configure(font=("TkFixedFont", new_size))
+
+    def zoom_out(self):
+        font = tkFont.Font(font=self.text_widget.cget("font"))
+        current_size = font.actual()["size"]
+        new_size = current_size - 2
+        if new_size > 0:
+            self.text_widget.configure(font=("TkFixedFont", new_size))
 
     def destroy(self):
         self.client.send('exit'.encode('utf-8'))
