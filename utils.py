@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.font as tkFont
 from tkinter import filedialog
 from tkinter import messagebox
 
@@ -9,6 +10,19 @@ def save_file(text_widget):
         with open(file_path, "w") as file:
             file.write(text_content)
         messagebox.showinfo("Info", "File saved successfully.")  # Show a success message
+
+def zoom_in(text_widget):
+    font = tkFont.Font(font=text_widget.cget("font"))
+    current_size = font.actual()["size"]
+    new_size = current_size + 2
+    text_widget.configure(font=("TkFixedFont", new_size))
+
+def zoom_out(text_widget):
+    font = tkFont.Font(font=text_widget.cget("font"))
+    current_size = font.actual()["size"]
+    new_size = current_size - 2
+    if new_size > 0:
+        text_widget.configure(font=("TkFixedFont", new_size))
 
 class FindDialog(tk.Toplevel):
     def __init__(self, parent):

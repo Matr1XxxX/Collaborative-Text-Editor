@@ -4,7 +4,7 @@ import threading
 from tkinter import filedialog
 import tkinter.font as tkFont
 from networking import receive_messages, send_text
-from utils import save_file, FindDialog
+from utils import save_file, FindDialog , zoom_in , zoom_out
 
 class CollaborativeTextEditor(tk.Tk):
     def __init__(self):
@@ -75,17 +75,10 @@ class CollaborativeTextEditor(tk.Tk):
         self.wait_window(find_dialog)
         
     def zoom_in(self):
-        font = tkFont.Font(font=self.text_widget.cget("font"))
-        current_size = font.actual()["size"]
-        new_size = current_size + 2
-        self.text_widget.configure(font=("TkFixedFont", new_size))
+        zoom_in(self.text_widget)
 
     def zoom_out(self):
-        font = tkFont.Font(font=self.text_widget.cget("font"))
-        current_size = font.actual()["size"]
-        new_size = current_size - 2
-        if new_size > 0:
-            self.text_widget.configure(font=("TkFixedFont", new_size))
+        zoom_out(self.text_widget)
 
     def destroy(self):
         self.client.send('exit'.encode('utf-8'))
