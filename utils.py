@@ -46,10 +46,14 @@ class FindDialog(tk.Toplevel):
         text_widget = self.parent.text_widget
         start_index = text_widget.search(search_str, "1.0", stopindex=tk.END)
         if start_index:
+            # Get line number from start_index
+            line_number = text_widget.index(start_index).split('.')[0]
+        
             end_index = f"{start_index}+{len(search_str)}c"
             text_widget.tag_remove("found", "1.0", tk.END)
             text_widget.tag_add("found", start_index, end_index)
             text_widget.see(start_index)
             text_widget.focus_set()
+            messagebox.showinfo("Info", f"First occurence of \"{search_str}\" found at line {line_number}.")
         else:
             messagebox.showinfo("Info", "Text not found.")
