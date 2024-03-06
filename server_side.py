@@ -1,14 +1,24 @@
 import socket
+import ssl
 import threading
 from networking import handle_client
 
 clients = []
 
 def start_server():
-    server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # Create an SSL context
+    ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+
+    # Set minimum and maximum SSL/TLS protocol version
+    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+    ssl_context.maximum_version = ssl.TLSVersion.TLSv1_2
+
+    # Load the self-signed certificate and key
+    ssl_context.load_cert_chain(certfile='server.crt', keyfile='server.key')
+
+    server = ssl_context.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), server_side=True)
     server.bind(('localhost', 12345))
     server.listen(5)
-
     print('Server listening on port 12345')
 
     while True:

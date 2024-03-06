@@ -1,3 +1,6 @@
+# networking.py
+import threading
+import tkinter as tk
 import socket
 
 def handle_client(client_socket, addr, clients):
@@ -27,15 +30,21 @@ def broadcast(message, client_socket, clients):
                 clients.remove(client)
 
 def receive_messages(client_socket, text_widget):
+    last_data = ""
     while True:
         try:
             data = client_socket.recv(1024).decode('utf-8')
-            text_widget.delete(1.0, "end")
-            text_widget.insert("end", data)
-            text_widget.see("end")
+            
+            if data != last_data:
+                text_widget.delete(1.0, "end")
+                text_widget.insert("end", data)
+                text_widget.see("end")
+                last_data = data
+                
         except:
             print("Server disconnected.")
             break
+
 
 def send_text(text_widget, client_socket):
     text_content = text_widget.get("1.0", "end-1c")  
