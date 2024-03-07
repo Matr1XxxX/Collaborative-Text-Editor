@@ -11,12 +11,16 @@ def create_client_context():
     # Create an SSL context
     context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
     context.minimum_version = ssl.TLSVersion.TLSv1_2
-    context.maximum_version = ssl.TLSVersion.TLSv1_2
-    context.load_cert_chain(certfile="client.crt", keyfile="client.key")
+
+    # Load the system's trusted CA certificates
+    context.load_default_certs()
+
+    # Add the server's certificate as a trusted CA (change 'server.crt' to your server's certificate file)
     context.load_verify_locations(cafile="server.crt")
-    context.verify_mode = ssl.CERT_REQUIRED
+    context.check_hostname = False
 
     return context, server_host, server_port
+
 
 def main():
     group_name = input("Enter project name: ")

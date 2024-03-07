@@ -1,4 +1,5 @@
 # server_side.py
+
 import socket
 import ssl
 import threading
@@ -10,8 +11,10 @@ class Group:
         self.clients = []
 
 def start_server(host, port):
-    # Create an SSL context
+    # Create an SSL context with certificate verification disabled
     ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    ssl_context.verify_mode = ssl.CERT_NONE
+    ssl_context.check_hostname = False
 
     # Set minimum and maximum SSL/TLS protocol version
     ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
