@@ -7,13 +7,13 @@ from utils import save_file, FindDialog, zoom_in, zoom_out
 class CollaborativeTextEditor(tk.Tk):
     _instance = None  # Class variable to track the instance
 
-    def __init__(self, client, *args, **kwargs):
+    def __init__(self, client, project_name, *args, **kwargs):
         if self._instance is not None:
             raise Exception("An instance of CollaborativeTextEditor already exists. Use get_instance() to retrieve it.")
         
         super().__init__(*args, **kwargs)
         self.client = client
-        self.title("Collaborative Text Editor")
+        self.title(f"Collaborative Text Editor - {project_name}")
         self.text_widget = tk.Text(self, wrap="word")
         self.text_widget.pack(expand=True, fill="both")
 
@@ -84,10 +84,11 @@ class CollaborativeTextEditor(tk.Tk):
         self.destroy()
 
     @classmethod
-    def get_instance(cls, client):
+    def get_instance(cls, client, project_name):
         if cls._instance is None:
-            cls._instance = cls(client)
+            cls._instance = cls(client, project_name)
         return cls._instance
+
 
 if __name__ == "__main__":
     app = CollaborativeTextEditor(tk.Tk())
