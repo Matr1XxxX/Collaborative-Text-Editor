@@ -9,7 +9,7 @@ def save_file(text_widget):
         text_content = text_widget.get("1.0", "end-1c")
         with open(file_path, "w") as file:
             file.write(text_content)
-        messagebox.showinfo("Info", "File saved successfully.")  # Show a success message
+        messagebox.showinfo("Info", "File saved successfully.")
 
 def zoom_in(text_widget):
     font = tkFont.Font(font=text_widget.cget("font"))
@@ -46,10 +46,12 @@ class FindDialog(tk.Toplevel):
         text_widget = self.parent.text_widget
         start_index = text_widget.search(search_str, "1.0", stopindex=tk.END)
         if start_index:
+            line_number = text_widget.index(start_index).split('.')[0]
             end_index = f"{start_index}+{len(search_str)}c"
             text_widget.tag_remove("found", "1.0", tk.END)
             text_widget.tag_add("found", start_index, end_index)
             text_widget.see(start_index)
             text_widget.focus_set()
+            messagebox.showinfo("Info", f"First occurrence of \"{search_str}\" found at line {line_number}.")
         else:
             messagebox.showinfo("Info", "Text not found.")

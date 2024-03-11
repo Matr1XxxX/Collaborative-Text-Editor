@@ -1,27 +1,26 @@
-import socket
+# gui.py
 import tkinter as tk
-import threading
-from tkinter import filedialog
-import tkinter.font as tkFont
+from threading import Thread
 from networking import receive_messages, send_text
-from utils import save_file, FindDialog , zoom_in , zoom_out
+from utils import save_file, FindDialog, zoom_in, zoom_out
 
 class CollaborativeTextEditor(tk.Tk):
-    def __init__(self):
-        super().__init__()
+    _instance = None  # Class variable to track the instance
 
-        self.title("Collaborative Text Editor")
-
+    def __init__(self, client, project_name, *args, **kwargs):
+        if self._instance is not None:
+            raise Exception("An instance of CollaborativeTextEditor already exists. Use get_instance() to retrieve it.")
+        
+        super().__init__(*args, **kwargs)
+        self.client = client
+        self.title(f"Collaborative Text Editor - {project_name}")
         self.text_widget = tk.Text(self, wrap="word")
         self.text_widget.pack(expand=True, fill="both")
-        
+
         # Set the default font size here
         self.text_widget.configure(font=("TkFixedFont", 12))
 
-        self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.client.connect(('localhost', 12345))
-
-        self.receive_thread = threading.Thread(target=receive_messages, args=(self.client, self.text_widget))
+        self.receive_thread = Thread(target=receive_messages, args=(self.client, self.text_widget))
         self.receive_thread.start()
 
         self.text_widget.bind("<Key>", self.on_key_press)
@@ -40,7 +39,7 @@ class CollaborativeTextEditor(tk.Tk):
         self.edit_menu.add_separator()
         self.edit_menu.add_command(label="Find", command=self.find_text)
         self.menu_bar.add_cascade(label="Edit", menu=self.edit_menu)
-        
+
         # Add View menu
         self.view_menu = tk.Menu(self.menu_bar, tearoff=0)
         self.view_menu.add_command(label="Zoom In", command=self.zoom_in)
@@ -73,13 +72,24 @@ class CollaborativeTextEditor(tk.Tk):
     def find_text(self):
         find_dialog = FindDialog(self)
         self.wait_window(find_dialog)
-        
+
     def zoom_in(self):
         zoom_in(self.text_widget)
 
     def zoom_out(self):
         zoom_out(self.text_widget)
 
-    def destroy(self):
+    def on_close(self):
         self.client.send('exit'.encode('utf-8'))
-        super().destroy()
+        self.destroy()
+
+    @classmethod
+    def get_instance(cls, client, project_name):
+        if cls._instance is None:
+            cls._instance = cls(client, project_name)
+        return cls._instance
+
+
+if __name__ == "__main__":
+    app = CollaborativeTextEditor(tk.Tk())
+    app.mainloop()
